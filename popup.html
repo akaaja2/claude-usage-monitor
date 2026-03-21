@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Usage</title>
+  <style>
+    :root {
+      --bg:       #141414;
+      --surface:  #1e1e1e;
+      --border:   #2a2a2a;
+      --ok:       #7bc67e;
+      --warn:     #f5a623;
+      --crit:     #e05555;
+      --muted:    #555;
+      --text:     #e0e0e0;
+      --subtext:  #888;
+      --accent:   #cc785c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 260px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 12px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 6px var(--ok);
+    }
+    .title {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+    .last-updated {
+      font-size: 9px;
+      color: var(--subtext);
+    }
+
+    /* ── Metric rows ── */
+    .metrics {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .metric-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .metric {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+    }
+
+    .metric-label {
+      font-size: 9px;
+      color: var(--subtext);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 1;
+      color: var(--ok);
+    }
+
+    .metric-sub {
+      font-size: 9px;
+      color: var(--subtext);
+      margin-top: 3px;
+    }
+
+    /* ── Progress bar ── */
+    .bar-wrap {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--ok);
+      transition: width 0.4s ease;
+    }
+
+    /* ── Footer row ── */
+    .footer-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 14px 12px;
+    }
+
+    .footer-metric {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-label {
+      font-size: 9px;
+      color: var(--subtext);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .footer-value {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    /* ── Buttons ── */
+    .actions {
+      display: flex;
+      gap: 6px;
+      padding: 0 14px 12px;
+    }
+
+    button {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--subtext);
+      font-family: inherit;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    button:active { opacity: 0.7; }
+
+    /* ── Debug pane ── */
+    #debug-pane {
+      display: none;
+      padding: 0 14px 12px;
+    }
+    #debug-pane textarea {
+      width: 100%;
+      height: 120px;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: #7bc67e;
+      font-family: inherit;
+      font-size: 8px;
+      padding: 6px;
+      resize: none;
+    }
+
+    /* ── States ── */
+    .loading { color: var(--subtext); font-size: 10px; text-align: center; padding: 20px; }
+    .error   { color: var(--crit);    font-size: 10px; text-align: center; padding: 12px 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <div class="dot" id="status-dot"></div>
+      <span class="title">Claude Usage</span>
+    </div>
+    <span class="last-updated" id="last-updated">—</span>
+  </div>
+
+  <div id="main-content">
+    <div class="loading">Loading…</div>
+  </div>
+
+  <div id="debug-pane">
+    <textarea id="debug-text" readonly></textarea>
+  </div>
+
+  <div class="actions">
+    <button id="btn-refresh">↻ Refresh</button>
+    <button id="btn-debug">{ } Raw</button>
+    <button id="btn-claude" title="Open Claude">⬥ Claude</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

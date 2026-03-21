@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Claude Usage Monitor",
+  "version": "1.0",
+  "description": "Shows your Claude session and weekly usage in the toolbar",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://claude.ai/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Claude Usage"
+  }
+}
