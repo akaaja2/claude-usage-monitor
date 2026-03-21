@@ -1,30 +1,68 @@
-# Claude Usage Monitor — Browser Extension
+# Claude Usage Monitor
 
-Shows your Claude session & weekly usage as a toolbar badge.
-Click the icon for the full breakdown.
+A Chrome/Edge extension that shows your Claude.ai session and weekly usage limits as a live badge on your browser toolbar.
 
-## Install (Chrome or Edge)
+No need to visit the settings page — see your usage at a glance, colour-coded green / amber / red.
 
-1. Open Chrome/Edge and go to: chrome://extensions
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked**
-4. Select this folder (claude_extension)
-5. The extension appears in your toolbar
+## Features
+
+- Session usage % with reset timer
+- Weekly usage % with reset timer
+- Extra credits balance
+- Colour-coded badge: green / amber / red
+- Works automatically using your existing Claude.ai login
+- Requires a Claude Pro or Max account
+
+## Install from Chrome Web Store
+
+*(Coming soon)*
+
+## Manual Install (Developer Mode)
+
+1. Download or clone this repo
+2. Open Chrome/Edge and go to: `chrome://extensions`
+3. Enable **Developer mode** (top-right toggle)
+4. Click **Load unpacked** → select this folder
+5. The extension appears in your toolbar immediately
 
 ## Usage
 
-- The **badge** on the icon shows your highest usage % (green/amber/red)
-- Click the icon for session %, weekly %, reset timers, and extra spend
+- The **badge** on the icon shows your highest usage %
+- Click the icon for the full breakdown
 - Click **↻ Refresh** to poll immediately
-- Click **{ } Raw** to see the raw API response (useful for debugging)
+- Click **{ } Raw** to see the raw API response
+- Click **⬥ Claude** to open claude.ai usage settings
 
 ## Troubleshooting
+
+**Shows "Not logged in"**
+→ Open claude.ai, sign in, then click Refresh
 
 **Badge shows "?" or popup shows "No data"**
 → Make sure you're logged into claude.ai in the same browser
 → Click Refresh in the popup
-→ Click { } Raw to see what the API returned — share this if something looks wrong
 
 **Still not working**
-→ Go to chrome://extensions → Claude Usage Monitor → click "Service Worker"
-→ Check the console for errors
+→ Go to `chrome://extensions` → Claude Usage Monitor → click **Service Worker**
+→ In the console run: `chrome.storage.local.clear(() => console.log("cleared"))`
+→ Then click Refresh in the popup
+
+## Privacy Policy
+
+This extension does not collect, transmit, or store any personal data on external servers.
+
+All data fetched from claude.ai (usage percentages, reset times, credit balance) is stored locally in your browser using `chrome.storage.local` and never leaves your device.
+
+The extension communicates only with `claude.ai` using your existing browser session. It makes no connections to any third-party servers.
+
+No analytics, no tracking, no ads.
+
+## Permissions
+
+- **storage** — Caches your organisation ID and usage data locally so the popup loads instantly. No data is sent to any external server.
+- **alarms** — Polls the claude.ai usage API once per minute in the background to keep the toolbar badge up to date.
+- **host_permissions (claude.ai)** — Required to call the claude.ai usage API using your existing browser session. The extension only reads usage/limit data and makes no modifications to your account.
+
+## License
+
+MIT
