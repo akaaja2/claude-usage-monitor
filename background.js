@@ -1,3 +1,5 @@
+importScripts("format.js");
+
 const POLL_MINUTES = 1;
 
 // ── Get the current user's org ID dynamically
@@ -114,34 +116,47 @@ function badgeColour(sp, wp) {
   return "#7bc67e";
 }
 
-// ── Format ISO reset time → "54m" / "2h 3m"
-function fmtReset(iso) {
-  if (!iso) return "—";
-  const diff = new Date(iso) - Date.now();
-  if (diff <= 0) return "soon";
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
 // ── Update the toolbar badge
-function updateBadge(parsed) {
+async function updateBadge(parsed) {
+  if (!parsed) return;
+  const settings = await getSettings();
   const sp = parsed.session_pct;
   const wp = parsed.weekly_pct;
   const max = Math.max(sp ?? 0, wp ?? 0);
-  const text = max > 0 ? `${max}%` : "?";
+
+  const text = settings.badgeMode === "time"
+    ? fmtBadgeCountdown(parsed.session_reset, settings.timeFormat)
+    : (max > 0 ? `${max}%` : "?");
+
+  const sr = fmtCountdown(parsed.session_reset, settings.timeFormat);
+  const wr = fmtCountdown(parsed.weekly_reset, settings.timeFormat);
+  const sClock = fmtClock(parsed.session_reset);
+  const wClock = fmtClock(parsed.weekly_reset);
 
   chrome.action.setBadgeText({ text });
   chrome.action.setBadgeBackgroundColor({ color: badgeColour(sp, wp) });
   chrome.action.setTitle({
-    title: `Claude Usage\nSession: ${sp ?? "—"}%  Weekly: ${wp ?? "—"}%\nResets: ${fmtReset(parsed.session_reset)}`
+    title:
+      `Claude Usage\n` +
+      `Session: ${sp ?? "—"}%  (resets in ${sr}${sClock ? " at " + sClock : ""})\n` +
+      `Weekly: ${wp ?? "—"}%  (resets in ${wr}${wClock ? " at " + wClock : ""})`
   });
+}
+
+// Re-draw the badge from the last stored data (keeps the countdown moving
+// even if a fetch fails, and applies settings changes immediately).
+async function refreshBadgeFromStore() {
+  const { usage } = await chrome.storage.local.get("usage");
+  if (usage) await updateBadge(usage);
 }
 
 // ── Main poll cycle
 async function poll() {
   const raw = await fetchUsage();
-  if (!raw) return;
+  if (!raw) {
+    await refreshBadgeFromStore();
+    return;
+  }
 
   const parsed = parseUsage(raw);
   await chrome.storage.local.set({
@@ -149,7 +164,7 @@ async function poll() {
     lastUpdated: Date.now(),
     rawJson: JSON.stringify(raw, null, 2)
   });
-  updateBadge(parsed);
+  await updateBadge(parsed);
 }
 
 // ── Alarms setup
@@ -161,6 +176,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 // ── Run immediately on install / browser start
 chrome.runtime.onInstalled.addListener(poll);
 chrome.runtime.onStartup.addListener(poll);
+
+// ── Settings changed in the popup -> redraw the badge right away
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && (changes.badgeMode || changes.timeFormat)) {
+    refreshBadgeFromStore();
+  }
+});
 
 // ── Allow popup to trigger a manual refresh
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
