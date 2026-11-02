@@ -6,8 +6,11 @@ No need to visit the settings page — see your usage at a glance, colour-coded 
 
 ## Features
 
-- Session usage % with reset timer
-- Weekly usage % with reset timer
+- Session usage % with a live countdown to reset (and the clock time it resets)
+- Weekly usage % with a live countdown to reset
+- Optional toolbar badge showing time left until the session resets
+- Adjustable text size (S / M / L / XL)
+- Choice of countdown format: `2h 05m`, `2:05` or `125m`
 - Extra credits balance
 - Colour-coded badge: green / amber / red
 - Works automatically using your existing Claude.ai login
@@ -15,7 +18,7 @@ No need to visit the settings page — see your usage at a glance, colour-coded 
 
 ## Install from Chrome Web Store
 
-*(Coming soon)*
+[Claude Usage Monitor on the Chrome Web Store](https://chromewebstore.google.com/detail/claude-usage-monitor/nopnffbnihnabiocahnfmfhjkhehmmlh)
 
 ## Manual Install (Developer Mode)
 
@@ -30,6 +33,7 @@ No need to visit the settings page — see your usage at a glance, colour-coded 
 - The **badge** on the icon shows your highest usage %
 - Click the icon for the full breakdown
 - Click **↻ Refresh** to poll immediately
+- Click **⚙** to change text size, countdown format, and what the badge shows (usage % or time to reset). Settings sync across your Chrome profile.
 - Click **{ } Raw** to see the raw API response
 - Click **⬥ Claude** to open claude.ai usage settings
 
